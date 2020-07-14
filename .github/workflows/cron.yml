@@ -1,0 +1,26 @@
+name: Cron
+on:
+  schedule:
+    - cron: 0 12 * * 0
+  repository_dispatch:
+
+jobs:
+  exec:
+    name: Update games list on ubuntu-latest with Python 3.x
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v1
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+        architecture: 'x64'
+    - name: Execute Script
+      run: python gamesListUpdater.py
+    - name: Commit Changes
+      uses: EndBug/add-and-commit@v4
+      with:
+        message: 'Updated the games list'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
