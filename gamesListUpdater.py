@@ -124,10 +124,16 @@ def update_games(index, data):
     for i in range(len(games_data[index])):
         if games_data[index][i]["id"] == data["id"]:
             found = 1
+            old_names = []
             if games_data[index][i]["name"] != data["name"]:
                 if index not in changed:
                     changed.append(index)
+                if "old_names" in games_data[index][i]:
+                    old_names = games_data[index][i]["old_names"]
+                if games_data[index][i]["name"] not in old_names:
+                    old_names.append(games_data[index][i]["name"])
             games_data[index][i] = data;
+            games_data[index][i]["old_names"] = old_names
             if debugon == 1:
                 print("      Updated existing game")
             if do_deletes == 1:
