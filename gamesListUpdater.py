@@ -85,8 +85,8 @@ def pick_index(id):
 def load_game_data(index):
     global games_data
     if index not in games_data:
-        if path.exists("games" + str(index) + ".json"):
-            with open("games" + str(index) + ".json") as json_file:
+        if path.exists("data/games" + str(index) + ".json"):
+            with open("data/games" + str(index) + ".json") as json_file:
                 if debugon == 1:
                     print("        Loaded game data file: games" + str(index) + ".json")
                 games_data[index] = json.load(json_file)
@@ -173,7 +173,7 @@ with open("index.json", "w") as json_file:
         print("Wrote new index.json")
 
 for k in games_data:
-    with open("games" + str(k) + ".json", "w") as json_file:
+    with open("data/games" + str(k) + ".json", "w") as json_file:
         json.dump(games_data[k], json_file)
         if debugon == 1:
             print("Wrote new games" + str(k) + ".json")
