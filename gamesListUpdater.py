@@ -10,6 +10,7 @@ from os import path
 start_time = time.time()
 
 api_key = os.environ.get("API_KEY", "")
+do_deletes = int(os.environ.get("DO_DELETES", "0"))
 debugon = int(os.environ.get("DEBUGON", "0"))
 
 if debugon == 1:
@@ -29,7 +30,11 @@ latest_game_date_obj = datetime.fromisoformat(latest_game_date)
 offset = 0
 max_entries_per_index = 100
 max_changes = 10
-changed = 0
+changed = []
+to_delete = []
+
+if do_deletes == 1:
+    latest_game_date = "2000-01-01 00:00:00"
 
 if debugon == 1:
     print("  latest_game_date: " + latest_game_date)
@@ -101,7 +106,8 @@ def update_index(index):
     global changed
     if index not in index_data["indexes"]:
         index_data["indexes"].append(index)
-        changed = 1
+        if index not in changed:
+            changed.append(index)
         print("Added index: " + str(index))
     if index > index_data["highest_index"]:
         index_data["highest_index"] = index
@@ -119,13 +125,18 @@ def update_games(index, data):
         if games_data[index][i]["id"] == data["id"]:
             found = 1
             if games_data[index][i]["name"] != data["name"]:
-                changed = 1
+                if index not in changed:
+                    changed.append(index)
             games_data[index][i] = data;
             if debugon == 1:
                 print("      Updated existing game")
+            if do_deletes == 1:
+                to_delete.remove(data["id"])
+            break
     if found == 0:
         games_data[index].append(data)
-        changed = 1
+        if index not in changed:
+            changed.append(index)
         print("Added game: " + str(data["id"]) + " -> " + data["name"])
     if data["id"] > index_data["highest_id"]:
         index_data["highest_id"] = data["id"]
@@ -138,6 +149,13 @@ def update_games(index, data):
         if debugon == 1:
             print("      New highest date: " + index_data["latest_game_date"])
 
+if do_deletes == 1:
+    for i in index_data["indexes"]:
+        load_game_data(i)
+    for k in games_data:
+        for i in range(len(games_data[k])):
+            to_delete.append(games_data[k][i]["id"])
+
 response = call_api()
 while response["number_of_page_results"] > 0:
     for x in response["results"]:
@@ -148,7 +166,7 @@ while response["number_of_page_results"] > 0:
     time.sleep(1)
     response = call_api()
 
-if changed == 1:
+if len(changed) > 0 or len(to_delete) > 0:
     index_data["version"] = index_data["version"] + 1
     if debugon == 1:
         print("  Publishing new version: " + str(index_data["version"]))
@@ -163,8 +181,20 @@ if changed == 1:
                 pp = pprint.PrettyPrinter(indent=3)
                 pp.pprint(index_data["index_changes"][highest])
             del index_data["index_changes"][highest]
+            if highest in index_data["deletes"]:
+                del index_data["deletes"][highest]
     index_data["index_changes"][index_data["version"]] = []
-    for k in games_data:
+    if do_deletes == 1:
+        index_data["deletes"][index_data["version"]] = []
+        for x in to_delete:
+            index = pick_index(x)
+            for i in range(len(games_data[index])):
+                if games_data[index][i]["id"] == x:
+                    index_data["deletes"][index_data["version"]].append(games_data[index][i]["name"])
+                    del games_data[index][i]
+                    changed.append(index)
+                    break
+    for k in changed:
         index_data["index_changes"][index_data["version"]].append(k)
 
 with open("index.json", "w") as json_file:
