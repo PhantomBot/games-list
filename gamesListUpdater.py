@@ -163,6 +163,7 @@ if do_deletes == 1:
             to_delete.append(games_data[k][i]["id"])
 
 response = call_api()
+iteration = 0
 while response["number_of_page_results"] > 0:
     for x in response["results"]:
         index = pick_index(x["id"])
@@ -170,6 +171,10 @@ while response["number_of_page_results"] > 0:
             print("  Using index: " + str(index))
         update_games(index, x)
     time.sleep(1)
+    iteration = iteration + 1
+    if iteration >= 100:
+        time.sleep(1)
+        iteration = 0
     response = call_api()
 
 if len(changed) > 0 or len(to_delete) > 0:
