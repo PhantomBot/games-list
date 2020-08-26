@@ -216,6 +216,7 @@ if len(changed) > 0 or len(to_delete) > 0:
             index = pick_index(x)
             for i in range(len(games_data[index])):
                 if games_data[index][i]["id"] == x:
+                    print("Deleted game: " + str(games_data[index][i]["id"]) + " -> " + games_data[index][i]["name"])
                     index_data["deletes"][index_data["version"]].append(games_data[index][i]["name"])
                     del games_data[index][i]
                     changed.append(index)
