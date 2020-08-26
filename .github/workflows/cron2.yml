@@ -1,4 +1,4 @@
-name: Cron
+name: Cron.Monthly
 on:
   schedule:
     - cron: 30 12 1 * *
