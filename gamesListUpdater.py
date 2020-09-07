@@ -199,8 +199,8 @@ if len(changed) > 0 or len(to_delete) > 0:
     while len(index_data["index_changes"]) >= max_changes:
         highest = 0
         for k in index_data["index_changes"]:
-            if k > highest:
-                highest = k
+            if int(k) > highest:
+                highest = int(k)
         if highest > 0:
             if debugon == 1:
                 print("  Removing old patch index")
