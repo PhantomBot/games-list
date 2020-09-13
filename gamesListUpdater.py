@@ -197,18 +197,18 @@ if len(changed) > 0 or len(to_delete) > 0:
     if debugon == 1:
         print("  Publishing new version: " + str(index_data["version"]))
     while len(index_data["index_changes"]) >= max_changes:
-        highest = 0
+        lowest = 0
         for k in index_data["index_changes"]:
-            if int(k) > highest:
-                highest = int(k)
-        if highest > 0:
+            if int(k) < lowest or lowest == 0:
+                lowest = int(k)
+        if lowest > 0:
             if debugon == 1:
                 print("  Removing old patch index")
                 pp = pprint.PrettyPrinter(indent=3)
-                pp.pprint(index_data["index_changes"][highest])
-            del index_data["index_changes"][highest]
-            if highest in index_data["deletes"]:
-                del index_data["deletes"][highest]
+                pp.pprint(index_data["index_changes"][lowest])
+            del index_data["index_changes"][str(lowest)]
+            if lowest in index_data["deletes"]:
+                del index_data["deletes"][str(lowest)]
     index_data["index_changes"][index_data["version"]] = []
     if do_deletes == 1:
         index_data["deletes"][index_data["version"]] = []
