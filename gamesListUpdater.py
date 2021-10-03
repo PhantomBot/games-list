@@ -54,7 +54,7 @@ if do_deletes == 1:
 if debugon == 1:
     print("  latest_game_date: " + latest_game_date)
 
-def call_api():
+def call_api(first=False):
     global offset
     global api_key
     global latest_game_date
@@ -62,6 +62,8 @@ def call_api():
     query = {"api_key": api_key, "format": "json", "field_list": "id,name,date_last_updated", "filter": "date_last_updated:" + latest_game_date +"|2100-01-01 00:00:00", "sort": "id:asc", "offset": str(offset)}
     if debugon == 1:
         print("    Performing API call")
+    else:
+        print("API Call", offset, "...", end="")
     resp = requests.get(url, params=query, headers={ "User-Agent": "PhantomBot.gamesListUpdater/2020" })
     if debugon == 1:
         print("    API Response")
@@ -70,13 +72,22 @@ def call_api():
         for k, v in resp.headers.items():
             print("     [" + k + "] " + v)
         print("     " + resp.text)
+    else:
+        print(str(resp.status_code), resp.reason, end="")
     if resp.status_code != 200:
         if debugon == 1:
             print("    Unsatisfactory status code(" + str(resp.status_code) + "), aborting...")
+        else
+            print()
         exit(1)
     response = json.loads(resp.text)
     if debugon == 1:
         print("    Completed API call")
+    else:
+        if first:
+        print("", response["status_code"], response["error"], "Total:", response["number_of_total_results"])
+        else:
+            print("", response["status_code"], response["error"])
     if response["status_code"] != 1:
         if debugon == 1:
             print("    Unsatisfactory status code(" + str(response["status_code"]) + "), aborting...")
@@ -151,7 +162,7 @@ def update_games(index, data):
             games_data[index][i]["old_names"] = old_names
             if debugon == 1:
                 print("      Updated existing game")
-            if do_deletes == 1:
+            if do_deletes == 1 and data["id"] in to_delete:
                 to_delete.remove(data["id"])
             break
     if found == 0:
@@ -177,7 +188,7 @@ if do_deletes == 1:
         for i in range(len(games_data[k])):
             to_delete.append(games_data[k][i]["id"])
 
-response = call_api()
+response = call_api(first=True)
 iteration = 0
 while response["number_of_page_results"] > 0:
     for x in response["results"]:

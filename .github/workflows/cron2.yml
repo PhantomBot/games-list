@@ -2,6 +2,7 @@ name: Cron.Monthly
 on:
   schedule:
     - cron: 30 12 1 * *
+  workflow_dispatch:
 
 jobs:
   exec:
