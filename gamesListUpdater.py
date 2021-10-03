@@ -77,7 +77,7 @@ def call_api(first=False):
     if resp.status_code != 200:
         if debugon == 1:
             print("    Unsatisfactory status code(" + str(resp.status_code) + "), aborting...")
-        else
+        else:
             print()
         exit(1)
     response = json.loads(resp.text)
