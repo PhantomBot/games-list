@@ -28,6 +28,10 @@ api_key = os.environ.get("API_KEY", "")
 do_deletes = int(os.environ.get("DO_DELETES", "0"))
 debugon = int(os.environ.get("DEBUGON", "0"))
 
+ratelimit = 3
+ratelimititerations = 30
+ratelimitmultiplier = 2
+
 if debugon == 1:
     print("Debug on", flush=True)
     print("API Key: " + api_key, flush=True)
@@ -47,6 +51,7 @@ max_entries_per_index = 100
 max_changes = 10
 changed = []
 to_delete = []
+total_entries = 0
 
 if do_deletes == 1:
     latest_game_date = "2000-01-01 00:00:00"
@@ -54,16 +59,17 @@ if do_deletes == 1:
 if debugon == 1:
     print("  latest_game_date: " + latest_game_date, flush=True)
 
-def call_api(first=False):
+def call_api():
     global offset
     global api_key
     global latest_game_date
+    global total_entries
     url = "https://www.giantbomb.com/api/games/"
     query = {"api_key": api_key, "format": "json", "field_list": "id,name,date_last_updated", "filter": "date_last_updated:" + latest_game_date +"|2100-01-01 00:00:00", "sort": "id:asc", "offset": str(offset)}
     if debugon == 1:
         print("    Performing API call", flush=True)
     else:
-        print("API Call", str(offset), "...", end="", flush=True)
+        print("API Call", str(offset), "/", str(total_entries), "...", end="", flush=True)
     resp = requests.get(url, params=query, headers={ "User-Agent": "PhantomBot.gamesListUpdater/2020" })
     if debugon == 1:
         print("    API Response", flush=True)
@@ -84,17 +90,19 @@ def call_api(first=False):
     if debugon == 1:
         print("    Completed API call", flush=True)
     else:
-        if first:
-            print("", response["status_code"], response["error"], "Total:", response["number_of_total_results"], flush=True)
-        else:
-            print("", response["status_code"], response["error"], flush=True)
+        print("", response["status_code"], response["error"], end="", flush=True)
     if response["status_code"] != 1:
         if debugon == 1:
             print("    Unsatisfactory status code(" + str(response["status_code"]) + "), aborting...", flush=True)
+        else:
+            print(flush=True)
         exit(1)
     offset = offset + response["number_of_page_results"]
+    total_entries = response["number_of_total_results"]
     if debugon == 1:
         print("    Next offset: " + str(offset), flush=True)
+    else:
+        print("\r", end="", flush=True)
     return response
 
 def pick_index(id):
@@ -188,7 +196,7 @@ if do_deletes == 1:
         for i in range(len(games_data[k])):
             to_delete.append(games_data[k][i]["id"])
 
-response = call_api(first=True)
+response = call_api()
 iteration = 0
 while response["number_of_page_results"] > 0:
     for x in response["results"]:
@@ -196,12 +204,16 @@ while response["number_of_page_results"] > 0:
         if debugon == 1:
             print("  Using index: " + str(index), flush=True)
         update_games(index, x)
-    time.sleep(1)
+    time.sleep(ratelimit)
     iteration = iteration + 1
-    if iteration >= 100:
-        time.sleep(1)
+    if iteration >= ratelimititerations:
+        print("Rate limiting...", end="", flush=True)
+        time.sleep(ratelimit * ratelimitmultiplier)
+        print("Done", flush=True)
         iteration = 0
     response = call_api()
+
+print(flush=True)
 
 if len(changed) > 0 or len(to_delete) > 0:
     index_data["version"] = index_data["version"] + 1
