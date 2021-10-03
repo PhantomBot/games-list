@@ -85,7 +85,7 @@ def call_api(first=False):
         print("    Completed API call")
     else:
         if first:
-        print("", response["status_code"], response["error"], "Total:", response["number_of_total_results"])
+            print("", response["status_code"], response["error"], "Total:", response["number_of_total_results"])
         else:
             print("", response["status_code"], response["error"])
     if response["status_code"] != 1:
