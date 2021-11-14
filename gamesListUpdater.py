@@ -20,7 +20,6 @@ import pprint
 import requests
 import time
 from datetime import datetime
-from os import path
 
 start_time = time.time()
 
@@ -105,21 +104,21 @@ def call_api():
         print("\r", end="", flush=True)
     return response
 
-def pick_index(id):
+def pick_index(idx):
     global index_data
     global max_entries_per_index
-    if id > index_data["highest_id"]:
-        count = id - index_data["highest_index"]
+    if idx > index_data["highest_id"]:
+        count = idx - index_data["highest_index"]
         remainder = max_entries_per_index - count
         if remainder > 0:
             return index_data["highest_index"]
     else:
         best_match = 0
         for i in index_data["indexes"]:
-            if i > best_match and i <= id:
+            if i > best_match and i <= idx:
                 best_match = i
         return best_match
-    return id
+    return idx
 
 def load_game_data(index):
     global games_data
@@ -228,7 +227,7 @@ if len(changed) > 0 or len(to_delete) > 0:
             if debugon == 1:
                 print("  Removing old patch index", flush=True)
                 pp = pprint.PrettyPrinter(indent=3)
-                pp.pprint(index_data["index_changes"][lowest], flush=True)
+                pp.pprint(index_data["index_changes"][lowest])
             del index_data["index_changes"][str(lowest)]
             if lowest in index_data["deletes"]:
                 del index_data["deletes"][str(lowest)]
