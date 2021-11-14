@@ -15,11 +15,11 @@
 
 import json
 import os
-import os.path
 import pprint
 import requests
 import time
 from datetime import datetime
+from os import path
 
 start_time = time.time()
 
