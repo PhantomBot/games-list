@@ -24,7 +24,7 @@ jobs:
       env:
         API_KEY: ${{ secrets.API_KEY }}
     - name: Commit Changes
-      uses: EndBug/add-and-commit@v4
+      uses: EndBug/add-and-commit@v9
       with:
         message: 'Updated the games list'
       env:
