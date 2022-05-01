@@ -28,6 +28,7 @@ do_deletes = int(os.environ.get("DO_DELETES", "0"))
 debugon = int(os.environ.get("DEBUGON", "0"))
 
 ratelimit = 3
+ratelimit502 = 10
 ratelimititerations = 30
 ratelimitmultiplier = 2
 
@@ -58,7 +59,7 @@ if do_deletes == 1:
 if debugon == 1:
     print("  latest_game_date: " + latest_game_date, flush=True)
 
-def call_api():
+def call_api(retry=False):
     global offset
     global api_key
     global latest_game_date
@@ -80,6 +81,10 @@ def call_api():
     else:
         print(str(resp.status_code), resp.reason, end="", flush=True)
     if resp.status_code != 200:
+        if resp.status_code == 502 and not retry:
+            print(flush=True)
+            time.sleep(ratelimit502)
+            return call_api(retry=True)
         if debugon == 1:
             print("    Unsatisfactory status code(" + str(resp.status_code) + "), aborting...", flush=True)
         else:
