@@ -1,6 +1,6 @@
 # games-list
 
-Copyright © 2016-2022 phantom.bot
+Copyright © 2016-2024 phantombot.github.io
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

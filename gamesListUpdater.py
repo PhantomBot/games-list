@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2020 phantom.bot
+# Copyright (C) 2016-2020 phantombot.github.io
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ ratelimit502 = 10
 ratelimit420 = 30
 maxratelimit420 = 120
 ratelimititerations = 25
-ratelimitmultiplier = 3
+ratelimitmultiplier = 4
 
 nextratelimit420 = ratelimit420
 
@@ -65,9 +65,8 @@ if debugon == 1:
 
 def call_api(retry=False):
     global offset
-    global api_key
-    global latest_game_date
     global total_entries
+    global nextratelimit420
     url = "https://www.giantbomb.com/api/games/"
     query = {"api_key": api_key, "format": "json", "field_list": "id,name,date_last_updated", "filter": "date_last_updated:" + latest_game_date +"|2100-01-01 00:00:00", "sort": "id:asc", "offset": str(offset)}
     if debugon == 1:
@@ -89,7 +88,7 @@ def call_api(retry=False):
             print(flush=True)
             time.sleep(ratelimit502)
             return call_api(retry=True)
-        if resp.status_code == 420:
+        if resp.status_code == 420 and nextratelimit420 <= maxratelimit420:
             print(flush=True)
             time.sleep(nextratelimit420)
             nextratelimit420 = nextratelimit420 + ratelimit420
