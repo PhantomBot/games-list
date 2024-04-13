@@ -85,7 +85,7 @@ def call_api(retry=False):
     else:
         print(str(resp.status_code), resp.reason, end="", flush=True)
     if resp.status_code != 200:
-        if resp.status_code == 502 and not retry:
+        if (resp.status_code == 502 or resp.status_code == 503) and not retry:
             print(flush=True)
             time.sleep(ratelimit502)
             return call_api(retry=True)
