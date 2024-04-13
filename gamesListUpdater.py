@@ -27,10 +27,14 @@ api_key = os.environ.get("API_KEY", "")
 do_deletes = int(os.environ.get("DO_DELETES", "0"))
 debugon = int(os.environ.get("DEBUGON", "0"))
 
-ratelimit = 3
+ratelimit = 5
 ratelimit502 = 10
-ratelimititerations = 30
-ratelimitmultiplier = 2
+ratelimit420 = 30
+maxratelimit420 = 120
+ratelimititerations = 25
+ratelimitmultiplier = 3
+
+nextratelimit420 = ratelimit420
 
 if debugon == 1:
     print("Debug on", flush=True)
@@ -85,11 +89,17 @@ def call_api(retry=False):
             print(flush=True)
             time.sleep(ratelimit502)
             return call_api(retry=True)
+        if resp.status_code == 420:
+            print(flush=True)
+            time.sleep(nextratelimit420)
+            nextratelimit420 = nextratelimit420 + ratelimit420
+            return call_api()
         if debugon == 1:
             print("    Unsatisfactory status code(" + str(resp.status_code) + "), aborting...", flush=True)
         else:
             print(flush=True)
         exit(1)
+    nextratelimit420 = ratelimit420
     response = json.loads(resp.text)
     if debugon == 1:
         print("    Completed API call", flush=True)
