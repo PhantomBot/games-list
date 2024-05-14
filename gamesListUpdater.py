@@ -27,12 +27,12 @@ api_key = os.environ.get("API_KEY", "")
 do_deletes = int(os.environ.get("DO_DELETES", "0"))
 debugon = int(os.environ.get("DEBUGON", "0"))
 
-ratelimit = 5
+ratelimit = 8
 ratelimit502 = 10
-ratelimit420 = 30
-maxratelimit420 = 120
-ratelimititerations = 25
-ratelimitmultiplier = 4
+ratelimit420 = 120
+maxratelimit420 = 1800
+ratelimititerations = 20
+ratelimitmultiplier = 5
 
 nextratelimit420 = ratelimit420
 
@@ -90,7 +90,9 @@ def call_api(retry=False):
             return call_api(retry=True)
         if resp.status_code == 420 and nextratelimit420 <= maxratelimit420:
             print(flush=True)
+            print("Rate limiting (" + str(nextratelimit420) + ")...", end="", flush=True)
             time.sleep(nextratelimit420)
+            print("Done", flush=True)
             nextratelimit420 = nextratelimit420 + ratelimit420
             return call_api()
         if debugon == 1:
