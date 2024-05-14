@@ -29,7 +29,7 @@ debugon = int(os.environ.get("DEBUGON", "0"))
 
 ratelimit = 8
 ratelimit502 = 10
-ratelimit420 = 120
+ratelimit420 = 300
 maxratelimit420 = 1800
 ratelimititerations = 20
 ratelimitmultiplier = 5
