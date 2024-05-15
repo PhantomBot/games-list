@@ -32,7 +32,7 @@ ratelimit502 = 10
 ratelimit420 = 300
 maxratelimit420 = 1800
 ratelimititerations = 20
-ratelimitmultiplier = 5
+ratelimitmultiplier = 7
 
 nextratelimit420 = ratelimit420
 
