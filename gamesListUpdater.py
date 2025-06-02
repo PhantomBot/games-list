@@ -27,8 +27,9 @@ api_key = os.environ.get("API_KEY", "")
 do_deletes = int(os.environ.get("DO_DELETES", "0"))
 debugon = int(os.environ.get("DEBUGON", "0"))
 
-ratelimit = 8
-ratelimit502 = 10
+ratelimit = 10
+ratelimit502 = 30
+max502retry = 10
 ratelimit420 = 300
 maxratelimit420 = 1800
 ratelimititerations = 20
@@ -63,7 +64,7 @@ if do_deletes == 1:
 if debugon == 1:
     print("  latest_game_date: " + latest_game_date, flush=True)
 
-def call_api(retry=False):
+def call_api(retry=1):
     global offset
     global total_entries
     global nextratelimit420
@@ -84,10 +85,10 @@ def call_api(retry=False):
     else:
         print(str(resp.status_code), resp.reason, end="", flush=True)
     if resp.status_code != 200:
-        if (resp.status_code == 502 or resp.status_code == 503) and not retry:
+        if (resp.status_code == 502 or resp.status_code == 503) and retry <= max502retry:
             print(flush=True)
-            time.sleep(ratelimit502)
-            return call_api(retry=True)
+            time.sleep(ratelimit502 * retry)
+            return call_api(retry=retry + 1)
         if resp.status_code == 420 and nextratelimit420 <= maxratelimit420:
             print(flush=True)
             print("Rate limiting (" + str(nextratelimit420) + ")...", end="", flush=True)
